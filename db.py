@@ -108,7 +108,7 @@ def add_system(user_id, system):
 	if not wspace_system:
 		with eve_conn.cursor() as c:
 			r = query_one(c, '''
-			SELECT solarSystemName, solarSystemID, security FROM mapSolarSystems
+			SELECT solarSystemName, solarSystemID, security, regionID FROM mapSolarSystems
 			WHERE solarSystemName = ?
 			''', system['dest'])
 			if r is None:
@@ -120,6 +120,11 @@ def add_system(user_id, system):
 				system['class'] = 'lowsec'
 			else:
 				system['class'] = 'nullsec'
+			s = query_one(c, '''
+			SELECT regionName FROM mapRegions
+			WHERE regionID = ?
+			''', r.regionID)
+			system['region'] = s.regionName
 			client = tornado.httpclient.HTTPClient()
 			ec_api = 'http://api.eve-central.com/api/route/from/{}/to/{}'
 			jumps = {
